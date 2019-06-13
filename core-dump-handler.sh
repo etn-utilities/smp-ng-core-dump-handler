@@ -46,15 +46,16 @@ if [[ "_0" = "_${LIMIT_SIZE}" ]]; then
     exit 0
 fi
 
-if lz4 --version >/dev/null 2>&1; then
+# Select the compressor to use
+if gzip --version >/dev/null 2>&1; then
+    COMPRESSOR="gzip -9"
+    EXT=.gz
+elif lz4 --version >/dev/null 2>&1; then
     COMPRESSOR="lz4 -1"
     EXT=.lz4
 elif lzop --version >/dev/null 2>&1; then
     COMPRESSOR="lzop -1"
     EXT=.lzo
-elif gzip --version >/dev/null 2>&1; then
-    COMPRESSOR="gzip -3"
-    EXT=.gz
 else
     COMPRESSOR=cat
     EXT=
