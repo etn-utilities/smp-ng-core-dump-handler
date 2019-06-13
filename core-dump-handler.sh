@@ -68,16 +68,16 @@ if [[ ! -d "${DIRECTORY}" ]]; then
     chmod 0775 "${DIRECTORY}"
 fi
 
-# Write the coredump file
-head --bytes "${LIMIT_SIZE}" \
-    | ${COMPRESSOR} > "${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
-
 # Keep only #ROTATE files
 find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
 	| sort \
 	| head --lines "-${ROTATE}" \
 	| cut --delimiter ' ' --fields 2 \
 	| xargs --no-run-if-empty rm
+
+# Write the coredump file
+head --bytes "${LIMIT_SIZE}" \
+    | ${COMPRESSOR} > "${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
 
 # Delete oldest file until usage is OK
 while (( $(du "${DIRECTORY}" -sk -0 | cut --fields 1) > $DIRECTORY_MAX_USAGE ))
