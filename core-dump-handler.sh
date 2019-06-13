@@ -68,10 +68,12 @@ if [[ ! -d "${DIRECTORY}" ]]; then
     chmod 0775 "${DIRECTORY}"
 fi
 
+# Write the coredump file
 head --bytes "${LIMIT_SIZE}" \
-    | ${COMPRESSOR} > "${DIRECTORY}/dump-${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
+    | ${COMPRESSOR} > "${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
 
-find "${DIRECTORY}" -name 'dump*' -type f -printf "%T@ %p\n" \
+# Keep only #ROTATE files
+find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
 	| sort \
 	| head --lines "-${ROTATE}" \
 	| cut --delimiter ' ' --fields 2 \
