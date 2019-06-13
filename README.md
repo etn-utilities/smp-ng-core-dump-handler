@@ -1,5 +1,7 @@
 # Linux core dump handler
 
+Forked from: https://github.com/alexey-medvedchikov/core-dump-handler
+
 This script handles processes core dumps and stores it in specified directory.
 Also it support rotation.
 
