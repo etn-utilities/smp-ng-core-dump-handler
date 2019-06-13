@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# sysctl -w kernel.core_pattern='|/bin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/log/core -r=10'
+# sysctl -w kernel.core_pattern='|/usr/sbin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/log/core -r=10 -m=4096'
 #
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
@@ -9,6 +9,7 @@ PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 umask 0177
 
 DIRECTORY="/var/log/core"
+DIRECTORY_MAX_USAGE=4096
 ROTATE=10
 
 for i in "$@"
@@ -34,6 +35,9 @@ case $i in
     ;;
     -r=*|--rotate=*)
         ROTATE="${i#*=}"; shift
+    ;;
+    -m=*|--max-usage=*)
+        DIRECTORY_MAX_USAGE="${i#*=}"; shift
     ;;
 esac
 done
@@ -71,3 +75,15 @@ find "${DIRECTORY}" -name 'dump*' -type f -printf "%T@ %p\n" \
 	| cut --delimiter ' ' --fields 2 \
 	| xargs --no-run-if-empty rm
 
+# Delete oldest file until usage is OK
+while (( $(du "${DIRECTORY}" -sk -0 | cut --fields 1) > $DIRECTORY_MAX_USAGE ))
+do
+    if ( ! find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
+            | sort \
+            | head --lines 1 \
+            | cut --delimiter ' ' --fields 2 \
+            | xargs --no-run-if-empty rm )
+    then
+        break
+    fi
+done
