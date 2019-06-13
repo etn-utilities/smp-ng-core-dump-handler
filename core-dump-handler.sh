@@ -6,7 +6,7 @@
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 
-umask 0177
+umask 0111
 
 DIRECTORY="/var/log/core"
 DIRECTORY_MAX_USAGE=4096
@@ -60,10 +60,11 @@ else
     EXT=
 fi
 
+# Create directory if needed
 if [[ ! -d "${DIRECTORY}" ]]; then
     mkdir -p "${DIRECTORY}"
     chown root:root "${DIRECTORY}"
-    chmod 0600 "${DIRECTORY}"
+    chmod 0775 "${DIRECTORY}"
 fi
 
 head --bytes "${LIMIT_SIZE}" \
