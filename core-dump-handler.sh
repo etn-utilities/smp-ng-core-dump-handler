@@ -65,7 +65,7 @@ fi
 if [[ ! -d "${DIRECTORY}" ]]; then
     mkdir -p "${DIRECTORY}"
     chown root:root "${DIRECTORY}"
-    chmod 0775 "${DIRECTORY}"
+    chmod 0777 "${DIRECTORY}"
 fi
 
 # Keep only #ROTATE files
