@@ -66,9 +66,11 @@ if [[ ! -d "${DIRECTORY}" ]]; then
     mkdir -p "${DIRECTORY}"
     chown root:root "${DIRECTORY}"
     chmod 0777 "${DIRECTORY}"
+else
+    chmod a+rw "${DIRECTORY}"
 fi
 
-chmod a+rw "${DIRECTORY}"
+
 
 # Keep only #ROTATE files
 find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
