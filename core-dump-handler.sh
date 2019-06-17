@@ -68,7 +68,7 @@ if [[ ! -d "${DIRECTORY}" ]]; then
     chmod 0777 "${DIRECTORY}"
 fi
 
-chmod a+rw ${DIRECTORY}
+chmod a+rw "${DIRECTORY}"
 
 # Keep only #ROTATE files
 find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
