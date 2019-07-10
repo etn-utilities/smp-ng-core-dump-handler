@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# sysctl -w kernel.core_pattern='|/usr/sbin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/log/core -r=10 -m=4096'
+# sysctl -w kernel.core_pattern='|/usr/sbin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/log/core -r=10 -m=4096 -b=/etc/core-dump-handler.d'
 #
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
@@ -10,6 +10,7 @@ umask 0111
 
 DIRECTORY="/var/log/core"
 DIRECTORY_MAX_USAGE=4096
+SCRIPTS_DIR="/etc/core-dump-handler.d"
 ROTATE=10
 
 for i in "$@"
@@ -33,6 +34,9 @@ case $i in
     -d=*|--dir=*)
         DIRECTORY="${i#*=}"; shift
     ;;
+    -b=*|--before-dir=*)
+        SCRIPTS_DIR="${i#*=}"; shift
+    ;;
     -r=*|--rotate=*)
         ROTATE="${i#*=}"; shift
     ;;
@@ -41,6 +45,9 @@ case $i in
     ;;
 esac
 done
+
+DUMP_FILE="${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
+SCRIPT_BEFORE="${SCRIPTS_DIR}/${EXE_NAME}.sh"
 
 if [[ "_0" = "_${LIMIT_SIZE}" ]]; then
     exit 0
@@ -70,7 +77,11 @@ else
     chmod a+rw "${DIRECTORY}"
 fi
 
-
+# Script to run before writing anything.
+if [[ -x "${SCRIPT_BEFORE}" ]]; then
+    echo "Executing '${SCRIPT_BEFORE}' before writing core dump"
+    "${SCRIPT_BEFORE}"
+fi
 
 # Keep only #ROTATE files
 find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
@@ -80,8 +91,9 @@ find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
 	| xargs --no-run-if-empty rm
 
 # Write the coredump file
+echo "Writing core dump to ${DUMP_FILE}"
 head --bytes "${LIMIT_SIZE}" \
-    | ${COMPRESSOR} > "${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
+    | ${COMPRESSOR} > "${DUMP_FILE}"
 
 # Delete oldest file until usage is OK
 while (( $(du "${DIRECTORY}" -sk -0 | cut --fields 1) > $DIRECTORY_MAX_USAGE ))
@@ -95,3 +107,6 @@ do
         break
     fi
 done
+
+# Sync
+sync
