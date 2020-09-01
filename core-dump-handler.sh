@@ -1,7 +1,9 @@
 #!/bin/bash
 
 #
-# sysctl -w kernel.core_pattern='|/usr/sbin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/log/core -r=10 -m=4096 -b=/etc/core-dump-handler.d'
+# sysctl -w kernel.core_pattern='|/usr/sbin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t
+#
+# Other setting in /etc/core-dump-handler.conf
 #
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin"
@@ -12,6 +14,15 @@ DIRECTORY="/var/log/core"
 DIRECTORY_MAX_USAGE=4096
 SCRIPTS_DIR="/etc/core-dump-handler.d"
 ROTATE=10
+WATCHDOG_USEC=600000000
+
+if [ -z "$NOTIFY_SOCKET" ] ; then
+	export NOTIFY_SOCKET=/run/systemd/notify
+fi
+
+if [ -f /etc/core-dump-handler.conf ] ; then
+    source /etc/core-dump-handler.conf
+fi
 
 for i in "$@"
 do
@@ -43,15 +54,26 @@ case $i in
     -m=*|--max-usage=*)
         DIRECTORY_MAX_USAGE="${i#*=}"; shift
     ;;
+    -w=*|--watchdog-timeout-usec=*)
+        WATCHDOG_USEC="${i#*=}"; shift
+    ;;
 esac
 done
 
-DUMP_FILE="${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
 SCRIPT_BEFORE="${SCRIPTS_DIR}/${EXE_NAME}.sh"
+EXE_CONF="${SCRIPTS_DIR}/${EXE_NAME}.conf"
+
+if [ -f ${EXE_CONF} ] ; then
+    source ${EXE_CONF}
+fi
 
 if [[ "_0" = "_${LIMIT_SIZE}" ]]; then
     exit 0
 fi
+
+# Set systemd watchdog
+systemd-notify --pid=${REAL_PID} WATCHDOG=1
+systemd-notify --pid=${REAL_PID} WATCHDOG_USEC=${WATCHDOG_USEC}
 
 # Select the compressor to use
 if gzip --version >/dev/null 2>&1; then
@@ -67,6 +89,8 @@ else
     COMPRESSOR=cat
     EXT=
 fi
+
+DUMP_FILE="${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
 
 # Create directory if needed
 if [[ ! -d "${DIRECTORY}" ]]; then
