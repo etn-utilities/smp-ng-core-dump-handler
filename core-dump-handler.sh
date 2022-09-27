@@ -90,7 +90,8 @@ else
     EXT=
 fi
 
-DUMP_FILE="${DIRECTORY}/${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}"
+FILE_NAME=${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}
+DUMP_FILE="${DIRECTORY}/${FILE_NAME}"
 
 # Create directory if needed
 if [[ ! -d "${DIRECTORY}" ]]; then
@@ -118,6 +119,16 @@ find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
 echo "Writing core dump to ${DUMP_FILE}"
 head --bytes "${LIMIT_SIZE}" \
     | ${COMPRESSOR} > "${DUMP_FILE}"
+
+if [ -x /usr/bin/journal-send ]
+then
+    /usr/bin/journal-send << EOM
+    MESSAGE=Coredump ${FILE_NAME} generated
+    PRIORITY=2
+    SMP_LOG_PAGE_NAME=Reset
+    SMP_LOG_CODE=$EXE_NAME
+EOM
+fi
 
 # Delete oldest file until usage is OK
 while (( $(du "${DIRECTORY}" -sk -0 | cut --fields 1) > $DIRECTORY_MAX_USAGE ))
