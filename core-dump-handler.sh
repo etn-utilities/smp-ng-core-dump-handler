@@ -90,7 +90,8 @@ else
     EXT=
 fi
 
-FILE_NAME=${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}.core${EXT}
+BASE_FILE="${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}"
+FILE_NAME="${BASE_FILE}.core${EXT}"
 DUMP_FILE="${DIRECTORY}/${FILE_NAME}"
 
 # Create directory if needed
@@ -115,14 +116,24 @@ find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
 	| cut --delimiter ' ' --fields 2 \
 	| xargs --no-run-if-empty rm
 
+VER_FILE="${DIRECTORY}/${BASE_FILE}.info.txt"
+date >> "${VER_FILE}"
+
+VERINFO=$(which verinfo)
+if [ ! -z "${VERINFO}" ] && [ -x "${VERINFO}" ]
+then
+    ${VERINFO} >> "${VER_FILE}"
+fi
+
 # Write the coredump file
 echo "Writing core dump to ${DUMP_FILE}"
 head --bytes "${LIMIT_SIZE}" \
     | ${COMPRESSOR} > "${DUMP_FILE}"
 
-if [ -x /usr/bin/journal-send ]
+JOURNALSEND=$(which journal-send)
+if [ ! -z "${JOURNALSEND}" ] && [ -x "${JOURNALSEND}" ]
 then
-    /usr/bin/journal-send << EOM
+    ${JOURNALSEND} << EOM
     MESSAGE=Coredump ${FILE_NAME} generated
     PRIORITY=2
     SMP_LOG_PAGE_NAME=Reset
