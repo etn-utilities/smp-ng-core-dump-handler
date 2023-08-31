@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #
 # sysctl -w kernel.core_pattern='|/usr/sbin/core-dump-handler.sh -c=%c -e=%e -p=%p -s=%s -t=%t
@@ -17,7 +17,7 @@ ROTATE=10
 WATCHDOG_USEC=600000000
 
 if [ -z "$NOTIFY_SOCKET" ] ; then
-	export NOTIFY_SOCKET=/run/systemd/notify
+    export NOTIFY_SOCKET=/run/systemd/notify
 fi
 
 if [ -f /etc/core-dump-handler.conf ] ; then
@@ -60,6 +60,9 @@ case $i in
 esac
 done
 
+EXE_NAME="${EXE_NAME// /_}" # replace spaces with _
+EXE_NAME="${EXE_NAME//!/_}" # replace ! with _
+
 SCRIPT_BEFORE="${SCRIPTS_DIR}/${EXE_NAME}.sh"
 EXE_CONF="${SCRIPTS_DIR}/${EXE_NAME}.conf"
 
@@ -76,7 +79,7 @@ systemd-notify --pid=${REAL_PID} WATCHDOG=1
 systemd-notify --pid=${REAL_PID} WATCHDOG_USEC=${WATCHDOG_USEC}
 
 # Select the compressor to use
-if gzip --version >/dev/null 2>&1; then
+if gzip --help >/dev/null 2>&1; then
     COMPRESSOR="gzip -9"
     EXT=.gz
 elif lz4 --version >/dev/null 2>&1; then
@@ -90,8 +93,9 @@ else
     EXT=
 fi
 
+CORE_EXTENSION=".core"
 BASE_FILE="${TS}-${EXE_NAME}-${REAL_PID}-${SIGNAL}"
-FILE_NAME="${BASE_FILE}.core${EXT}"
+FILE_NAME="${BASE_FILE}${CORE_EXTENSION}${EXT}"
 DUMP_FILE="${DIRECTORY}/${FILE_NAME}"
 
 # Create directory if needed
@@ -110,11 +114,18 @@ if [[ -x "${SCRIPT_BEFORE}" ]]; then
 fi
 
 # Keep only #ROTATE files
-find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
-	| sort \
-	| head --lines "-${ROTATE}" \
-	| cut --delimiter ' ' --fields 2 \
-	| xargs --no-run-if-empty rm
+find "${DIRECTORY}" -type f -name "*${EXT}" \
+    | sort \
+    | head -n "-${ROTATE}" \
+    | while IFS= read -r file; do
+        rm "$file"  # remove current file
+        base_name=$(basename $file)
+        base_name="${base_name%.*}"  # Get filename without extensions
+        base_name="${base_name%${CORE_EXTENSION}}"  # Get filename without core extension
+        if [ -n "$base_name" ]; then  # Validate name not empty
+            find "${DIRECTORY}" -type f -name "${base_name}*" -delete  # Delete all files with the same base name
+        fi
+    done
 
 VER_FILE="${DIRECTORY}/${BASE_FILE}.info.txt"
 date >> "${VER_FILE}"
@@ -127,7 +138,7 @@ fi
 
 # Write the coredump file
 echo "Writing core dump to ${DUMP_FILE}"
-head --bytes "${LIMIT_SIZE}" \
+head -c "${LIMIT_SIZE}" \
     | ${COMPRESSOR} > "${DUMP_FILE}"
 
 JOURNALSEND=$(which journal-send)
@@ -142,13 +153,21 @@ EOM
 fi
 
 # Delete oldest file until usage is OK
-while (( $(du "${DIRECTORY}" -sk -0 | cut --fields 1) > $DIRECTORY_MAX_USAGE ))
-do
-    if ( ! find "${DIRECTORY}" -type f -printf "%T@ %p\n" \
+while [[ $(du "${DIRECTORY}" -sk | cut -f 1) -ge $DIRECTORY_MAX_USAGE ]]
+ do
+    if ( ! find "${DIRECTORY}" -type f -name "*${EXT}" \
             | sort \
-            | head --lines 1 \
-            | cut --delimiter ' ' --fields 2 \
-            | xargs --no-run-if-empty rm )
+            | head -n 1 \
+            | while IFS= read -r file; do
+                rm "$file"  # remove current file
+                base_name=$(basename $file)
+                base_name="${base_name%.*}"  # Get filename without extensions
+                base_name="${base_name%${CORE_EXTENSION}}"  # Get filename without core extension
+                if [ -n "$base_name" ]; then  # Validate name not empty
+                    find "${DIRECTORY}" -type f -name "${base_name}*" -delete  # Delete all files with the same base name
+                fi
+                done
+        )
     then
         break
     fi
