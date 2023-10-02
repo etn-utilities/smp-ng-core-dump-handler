@@ -127,13 +127,10 @@ find "${DIRECTORY}" -type f -name "*${EXT}" \
         fi
     done
 
-VER_FILE="${DIRECTORY}/${BASE_FILE}.info.txt"
-date >> "${VER_FILE}"
-
-VERINFO=$(which verinfo)
-if [ ! -z "${VERINFO}" ] && [ -x "${VERINFO}" ]
-then
-    ${VERINFO} >> "${VER_FILE}"
+# Write info
+if [ ! -z "${SCRIPT_INFO_FILE}" ] && [ -x "${SCRIPT_INFO_FILE}" ]; then
+    echo "Executing '${SCRIPT_INFO_FILE}' before writing core dump"
+    "${SCRIPT_INFO_FILE}" >> "${DIRECTORY}/${BASE_FILE}.info.txt"
 fi
 
 # Write the coredump file
@@ -147,6 +144,7 @@ then
     ${JOURNALSEND} << EOM
     MESSAGE=Coredump ${FILE_NAME} generated
     PRIORITY=2
+    SYSLOG_IDENTIFIER=$EXE_NAME
     SMP_LOG_PAGE_NAME=Reset
     SMP_LOG_CODE=$EXE_NAME
 EOM
