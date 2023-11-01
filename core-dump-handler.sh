@@ -114,7 +114,7 @@ if [[ -x "${SCRIPT_BEFORE}" ]]; then
 fi
 
 # Keep only #ROTATE files
-find "${DIRECTORY}" -type f -name "*${EXT}" \
+find "${DIRECTORY}" -type f -name "*${CORE_EXTENSION}*" \
     | sort \
     | head -n "-${ROTATE}" \
     | while IFS= read -r file; do
@@ -153,7 +153,7 @@ fi
 # Delete oldest file until usage is OK
 while [[ $(du "${DIRECTORY}" -sk | cut -f 1) -ge $DIRECTORY_MAX_USAGE ]]
  do
-    if ( ! find "${DIRECTORY}" -type f -name "*${EXT}" \
+    if ( ! find "${DIRECTORY}" -type f -name "*${CORE_EXTENSION}*" \
             | sort \
             | head -n 1 \
             | while IFS= read -r file; do
