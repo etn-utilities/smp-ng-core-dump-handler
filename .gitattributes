@@ -1,12 +1,153 @@
-#
-# By default text files won't be converted to CRLF on windows
-#
-*	text=auto eol=lf
+*       text=auto
+
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.vbs   text eol=crlf
 
 #
-# Insert below specific files for which you want to override the rules
-# (you can create .gitattributes files in sub directories)
-# Example:
+# LFS tracked files
 #
-#  MyCRLFFile.txt text eol=crlf
-#
+
+# 7z files
+*.7[Zz] filter=lfs diff=lfs merge=lfs -text
+
+# AI files
+*.[aA][iI] filter=lfs diff=lfs merge=lfs -text
+
+# APP files
+*.[aA][pP][pP] filter=lfs diff=lfs merge=lfs -text
+
+# BIN files
+*.[bB][iI][nN] filter=lfs diff=lfs merge=lfs -text
+
+# BMP images
+*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text
+
+# CHM files
+*.[cC][hH][mM] filter=lfs diff=lfs merge=lfs -text
+
+# DAT files
+*.[dD][aA][tT] filter=lfs diff=lfs merge=lfs -text
+
+# DLL files
+*.[dD][lL][lL] filter=lfs diff=lfs merge=lfs -text
+
+# DOC files
+*.[dD][oO][cC] filter=lfs diff=lfs merge=lfs -text
+
+# DOCX files
+*.[dD][oO][cC][xX] filter=lfs diff=lfs merge=lfs -text
+
+# EXE files
+*.[eE][xX][eE] filter=lfs diff=lfs merge=lfs -text
+
+# GEF files
+*.[gG][eE][fF] filter=lfs diff=lfs merge=lfs -text
+
+# GIF images
+*.[gG][iI][fF] filter=lfs diff=lfs merge=lfs -text
+
+# IDB files
+*.[iI][dD][bB] filter=lfs diff=lfs merge=lfs -text
+
+# ISO files
+*.[iI][sS][oO] filter=lfs diff=lfs merge=lfs -text
+
+# JAR files
+*.[jJ][aA][rR] filter=lfs diff=lfs merge=lfs -text
+
+# JPG images
+*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text
+
+# LIB files
+*.[lL][iI][bB] filter=lfs diff=lfs merge=lfs -text
+
+# HDR images
+*.[hH][dD][rR] filter=lfs diff=lfs merge=lfs -text
+
+# HMI files
+*.[hH][mM][iI] filter=lfs diff=lfs merge=lfs -text
+
+# MO files
+*.[mM][oO] filter=lfs diff=lfs merge=lfs -text
+
+# MP3 audio files
+*.[mM][pP][3] filter=lfs diff=lfs merge=lfs -text
+
+# MP4 video files
+*.[mM][pP][4] filter=lfs diff=lfs merge=lfs -text
+
+# OUT files
+*.[oO][uU][tT] filter=lfs diff=lfs merge=lfs -text
+
+# PAR files
+*.[pP][aA][rR] filter=lfs diff=lfs merge=lfs -text
+
+# PDB files
+*.[pP][dD][bB] filter=lfs diff=lfs merge=lfs -text
+
+# PDF documents
+*.[pP][dD][fF] filter=lfs diff=lfs merge=lfs -text
+
+# PFX files
+*.[pP][fF][xX] filter=lfs diff=lfs merge=lfs -text
+
+# PNG images
+*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text
+
+# PPTX presentations
+*.[pP][pP][tT][xX] filter=lfs diff=lfs merge=lfs -text
+
+# PSD images
+*.[pP][sS][dD] filter=lfs diff=lfs merge=lfs -text
+
+# PYD files
+*.[pP][yY][dD] filter=lfs diff=lfs merge=lfs -text
+
+# PWS files
+*.[pP][wW][sS] filter=lfs diff=lfs merge=lfs -text
+
+# QCH files
+*.[qQ][cC][hH] filter=lfs diff=lfs merge=lfs -text
+
+# SHM files
+*.[sS][hH][mM] filter=lfs diff=lfs merge=lfs -text
+
+# SMP files
+*.[sS][mM][pP] filter=lfs diff=lfs merge=lfs -text
+
+# RAW images
+*.[rR][aA][wW] filter=lfs diff=lfs merge=lfs -text
+
+# ROM files
+*.[rR][oO][mM] filter=lfs diff=lfs merge=lfs -text
+
+# SO files
+*.[sS][oO] filter=lfs diff=lfs merge=lfs -text
+
+# TAR.GZ archives
+*.[tT][aA][rR].[gG][zZ] filter=lfs diff=lfs merge=lfs -text
+
+# TGZ archives
+*.[tT][gG][zZ] filter=lfs diff=lfs merge=lfs -text
+
+# TLB files
+*.[tT][lL][bB] filter=lfs diff=lfs merge=lfs -text
+
+# TPL files
+*.[tT][pP][lL] filter=lfs diff=lfs merge=lfs -text
+
+# VSD diagrams
+*.[vV][sS][dD] filter=lfs diff=lfs merge=lfs -text
+
+# VSDX diagrams
+*.[vV][sS][dD][xX] filter=lfs diff=lfs merge=lfs -text
+
+# XLS spreadsheets
+*.[xX][lL][sS] filter=lfs diff=lfs merge=lfs -text
+
+# XLSX spreadsheets
+*.[xX][lL][sS][xX] filter=lfs diff=lfs merge=lfs -text
+
+# ZIP archives
+*.[zZ][iI][pP] filter=lfs diff=lfs merge=lfs -text
